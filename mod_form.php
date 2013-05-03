@@ -50,7 +50,7 @@ class mod_webex_mod_form extends moodleform_mod {
         //-------------------------------------------------------
         $mform->addElement('header', 'content', get_string('contentheader', 'webex'));
         $mform->addElement('text', 'externalurl', get_string('externalurl', 'webex'), array('size'=>'48')); 
-		$mform->addElement('static', 'parametersinfo', '', 'http://<b style="color:red">yoursite</b>.webex.com/');
+		$mform->addElement('static', 'parametersinfo', '', 'http://<b style="color:red">yoursite</b>.webex.com/ (Input only yoursite, not full url)');
         $mform->addRule('externalurl', null, 'required', null, 'client');
         //-------------------------------------------------------
         $mform->addElement('header', 'optionssection', get_string('optionsheader', 'webex'));
