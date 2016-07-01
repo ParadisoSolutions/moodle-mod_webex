@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<XMLDB PATH="mod/webex/db" VERSION="20090722" COMMENT="XMLDB file for webex module"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
+>
+  <TABLES>
+    <TABLE NAME="webex" COMMENT="each record is one webex resource">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="course"/>
+        <FIELD NAME="course" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="id" NEXT="eventid"/>
+        <FIELD NAME="eventid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="course" NEXT="name"/>
+        <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" PREVIOUS="eventid" NEXT="intro"/>
+        <FIELD NAME="intro" TYPE="text" LENGTH="small" NOTNULL="false" SEQUENCE="false" PREVIOUS="name" NEXT="introformat"/>
+        <FIELD NAME="introformat" TYPE="int" LENGTH="4" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="intro" NEXT="externalurl"/>
+        <FIELD NAME="externalurl" TYPE="text" LENGTH="small" NOTNULL="true" SEQUENCE="false" PREVIOUS="introformat" NEXT="duration"/>
+        <FIELD NAME="duration" TYPE="int" LENGTH="20" NOTNULL="true" SEQUENCE="false" PREVIOUS="externalurl" NEXT="timestart"/>
+        <FIELD NAME="timestart" TYPE="int" LENGTH="20" NOTNULL="true" SEQUENCE="false" PREVIOUS="duration" NEXT="meetingid"/>
+        <FIELD NAME="meetingid" TYPE="int" LENGTH="20" NOTNULL="true" SEQUENCE="false" PREVIOUS="timestart" NEXT="display"/>
+        <FIELD NAME="display" TYPE="int" LENGTH="4" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="meetingid" NEXT="displayoptions"/>
+        <FIELD NAME="displayoptions" TYPE="text" LENGTH="small" NOTNULL="false" SEQUENCE="false" PREVIOUS="display" NEXT="parameters"/>
+        <FIELD NAME="parameters" TYPE="text" LENGTH="small" NOTNULL="false" SEQUENCE="false" PREVIOUS="displayoptions" NEXT="timemodified"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="parameters" NEXT="recordfile"/>
+        <FIELD NAME="recordfile" TYPE="text" LENGTH="medium" NOTNULL="false" UNSIGNED="true" SEQUENCE="false" PREVIOUS="timemodified" NEXT="recordid"/>
+        <FIELD NAME="recordid" TYPE="int" LENGTH="20" NOTNULL="false" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="recordfile"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="course" UNIQUE="false" FIELDS="course"/>
+        <INDEX NAME="meetingid" UNIQUE="false" FIELDS="meetingid"/>
+        <INDEX NAME="eventid" UNIQUE="false" FIELDS="eventid"/>
+      </INDEXES>
+    </TABLE>
+  </TABLES>
+</XMLDB>

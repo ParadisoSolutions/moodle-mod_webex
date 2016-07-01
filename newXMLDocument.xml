@@ -1,0 +1,28 @@
+HTTP/1.1 200 OK
+Date: Mon, 04 Nov 2013 19:24:28 GMT
+Server: Apache-Coyote/1.1
+Pragma: no-cache
+Cache-Control: no-cache
+Expires: Thu, 01 Jan 1970 00:00:00 GMT
+Content-Type: text/xml;charset=UTF-8
+Connection: close
+
+<?xml version="1.0" encoding="UTF-8"?>
+<serv:message xmlns:serv="http://www.webex.com/schemas/2002/06/service" xmlns:com="http://www.webex.com/schemas/2002/06/common" xmlns:meet="http://www.webex.com/schemas/2002/06/service/meeting" xmlns:att="http://www.webex.com/schemas/2002/06/service/attendee">
+    <serv:header>
+        <serv:response>
+            <serv:result>SUCCESS</serv:result>
+            <serv:gsbStatus>PRIMARY</serv:gsbStatus>
+        </serv:response>
+    </serv:header>
+    <serv:body>
+        <serv:bodyContent xsi:type="meet:createMeetingResponse" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+            <meet:meetingkey>623063327</meet:meetingkey>
+            <meet:iCalendarURL>
+                <serv:host>https://apidemoeu.webex.com/apidemoeu/j.php?ED=270115952&amp;UID=512578762&amp;ICS=MIFH&amp;ST=1</serv:host>
+                <serv:attendee>https://apidemoeu.webex.com/apidemoeu/j.php?ED=270115952&amp;UID=512578762&amp;ICS=MIFA&amp;ST=1</serv:attendee>
+            </meet:iCalendarURL>
+            <meet:guestToken>5b891df5fd78db21681d37049b78e6cd</meet:guestToken>
+        </serv:bodyContent>
+    </serv:body>
+</serv:message>
