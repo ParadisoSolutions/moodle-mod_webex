@@ -236,51 +236,50 @@ HTML;
 
 	
         public function meeting_CreateMeeting($MeetingName, $MeetingDate, $Description, $Duration, $repeatType='NO_REPEAT', $expirationDate='', $meetingOptions){
-           $Description = strip_tags($Description);
-           
-        $MeetingName = strip_tags($MeetingName);
-        $participant = '';
-        $telephoneOption = '';
+            $Description = strip_tags($Description);
+            $MeetingName = strip_tags($MeetingName);
+            $participant = '';
+            $telephoneOption = '';
 
-        if (isset($meetingOptions->attendees)) {
-            foreach ($meetingOptions->attendees as $email) {
-                $participant .= '<attendee><person>  <email>' . $email . ' </email></person></attendee>';
+            if (isset($meetingOptions->attendees)) {
+                foreach ($meetingOptions->attendees as $email) {
+                    $participant .= '<attendee><person>  <email>' . $email . ' </email></person></attendee>';
+                }
             }
-        }
-        $enableMeetingOption = '<enableOptions>                    
-                    <chat>TRUE</chat>
-                    <audioVideo>TRUE</audioVideo>   
-                    <attendeeList>TRUE</attendeeList>
-                    <fileShare>TRUE</fileShare>';
+            $enableMeetingOption = '<enableOptions>                    
+                        <chat>TRUE</chat>
+                        <audioVideo>TRUE</audioVideo>   
+                        <attendeeList>TRUE</attendeeList>
+                        <fileShare>TRUE</fileShare>';
 
 
 
-        if ($meetingOptions->video_type == 2) {
-            $enableMeetingOption .= ' <HQvideo>TRUE</HQvideo>'
-                    . '<HDvideo>TRUE</HDvideo> ';
-        } else if ($meetingOptions->video_type == 1) {
-            $enableMeetingOption .= '<HQvideo>TRUE</HQvideo>';
-        }
-        if ($meetingOptions->conference_type == 1) {
-            $enableMeetingOption .= '<voip>TRUE</voip>';
-        }
+            if ($meetingOptions->video_type == 2) {
+                $enableMeetingOption .= ' <HQvideo>TRUE</HQvideo>'
+                        . '<HDvideo>TRUE</HDvideo> ';
+            } else if ($meetingOptions->video_type == 1) {
+                $enableMeetingOption .= '<HQvideo>TRUE</HQvideo>';
+            }
+            if ($meetingOptions->conference_type == 1) {
+                $enableMeetingOption .= '<voip>TRUE</voip>';
+            }
 
-        $enableMeetingOption .= '</enableOptions>';
+            $enableMeetingOption .= '</enableOptions>';
 
         
-         if($meetingOptions->conference_type==2){
-             $telephoneOption = '<telephony>
-				 <telephonySupport>CALLIN</telephonySupport>
-				 <tollFree>TRUE</tollFree> 
-                               
-			       </telephony>';
-            
-        }
+             if($meetingOptions->conference_type==2){
+                 $telephoneOption = '<telephony>
+    				 <telephonySupport>CALLIN</telephonySupport>
+    				 <tollFree>TRUE</tollFree> 
+                                   
+    			       </telephony>';
+                
+            }
         
            
            
            
-            $xml= <<< HTML
+            $xml = <<< HTML
             <accessControl>
               <meetingPassword>$meetingOptions->meeting_password</meetingPassword>
             </accessControl>       
@@ -301,8 +300,8 @@ HTML;
          $telephoneOption 
 HTML;
             
-                    if ($participant) {
-            $xml .= <<< HTML
+            if ($participant) {
+                $xml .= <<< HTML
                    <participants>
                        <attendees>                         
                        $participant                        
@@ -310,26 +309,24 @@ HTML;
                    </participants> 
 HTML;
                     }    
-             $payload['xml'] = $xml;
-		$payload['service'] =  str_replace("_", ".", __FUNCTION__);
-		$data = $this->transmit($payload);
-               
-        
-               
-                $xml = new SimpleXmlElement($data);
+            $payload['xml'] = $xml;
+            $payload['service'] =  str_replace("_", ".", __FUNCTION__);
+            $data = $this->transmit($payload);
+
+            $xml = new SimpleXmlElement($data);
              
-		return (string)$xml->children('serv', true)->body->bodyContent->children('meet',true)->meetingkey;
+            return (string)$xml->children('serv', true)->body->bodyContent->children('meet',true)->meetingkey;
         }
 	//public function meeting_CreateTeleconferenceSession();
-            public function meeting_DelMeeting($meetingKey){
-            $xml= <<< HTML
-            <meetingKey>$meetingKey</meetingKey>
+        public function meeting_DelMeeting($meetingKey){
+            $xml = <<< HTML
+                <meetingKey>$meetingKey</meetingKey>
 HTML;
              
-             $payload['xml'] = $xml;
-		$payload['service'] =  str_replace("_", ".", __FUNCTION__);
-		$data = $this->transmit($payload);
-                
+            $payload['xml'] = $xml;
+            $payload['service'] =  str_replace("_", ".", __FUNCTION__);
+            $data = $this->transmit($payload);
+
         }
 	public function meeting_GethosturlMeeting($key){
             
@@ -402,7 +399,119 @@ HTML;
                 return $xml->children('serv', true)->body->bodyContent->children('meet',true);	
                 
         }
-	//public function meeting_SetMeeting();
+	
+    /**
+     * Update webex meeting.
+     *
+     * TODO:
+     * 1. We need to control when it failed/succeed
+     *
+     * @return true/false
+     * @author Andrew Ramos
+     **/
+    public function meeting_SetMeeting($instanceid, $meetingname, $meetingdate, $description, $duration, $repeattype = 'NO_REPEAT', $expirationdate = '', $meetingoptions) {
+
+        global $DB;
+
+        $description = strip_tags($description);
+        $meetingname = strip_tags($meetingname);
+        $participant = '';
+        $telephoneoption = '';
+
+        if (!empty($meetingoptions->attendees)) {
+            foreach ($meetingOptions->attendees as $email) {
+                $participant .= '
+                    <attendee>
+                        <person>
+                            <email>' . $email . ' </email>
+                        </person>
+                    </attendee>
+                ';
+            }
+        }
+
+        $enablemeetingoption = '
+            <enableOptions>                    
+                <chat>TRUE</chat>
+                <audioVideo>TRUE</audioVideo>   
+                <attendeeList>TRUE</attendeeList>
+                <fileShare>TRUE</fileShare>
+        ';
+
+        if ($meetingoptions->video_type == 2) {
+
+            $enablemeetingoption .= '
+                <HQvideo>TRUE</HQvideo>
+                <HDvideo>TRUE</HDvideo>
+            ';
+
+        } else if ($meetingoptions->video_type == 1) {
+            $enablemeetingoption .= '<HQvideo>TRUE</HQvideo>';
+        }
+
+        if ($meetingoptions->conference_type == 1) {
+            $enablemeetingoption .= '<voip>TRUE</voip>';
+        }
+
+        $enablemeetingoption .= '</enableOptions>';
+    
+        if($meetingoptions->conference_type == 2) {
+
+            $telephoneoption = '
+                <telephony>
+                    <telephonySupport>CALLIN</telephonySupport>
+                    <tollFree>TRUE</tollFree> 
+                </telephony>
+            ';
+
+        }
+
+        $xml = <<< HTML
+            <accessControl>
+                <meetingPassword>$meetingoptions->meeting_password</meetingPassword>
+            </accessControl>       
+            <metaData>
+                <confName>$meetingname</confName>
+                <meetingType>123</meetingType>
+                <greeting>$description</greeting>
+            </metaData>
+            <schedule>
+                <startDate>$meetingdate</startDate>
+                <timeZoneID>11</timeZoneID>
+                <duration>$duration</duration>
+            </schedule>
+            <repeat>
+                <repeatType>$repeattype</repeatType>
+            </repeat>
+            $enablemeetingoption
+            $telephoneoption 
+HTML;
+        
+        if ($participant) {
+            $xml .= 
+            <<< HTML
+               <participants>
+                    <attendees>                         
+                        $participant                        
+                    </attendees>               
+               </participants> 
+HTML;
+        }
+
+        // Add meetingkey to xml request.
+        $meetingkey = $DB->get_record('webex',  array('id' => $instanceid), $fields='meetingid', $strictness=IGNORE_MISSING);
+        if ($meetingkey) {
+            $xml .= '<meetingkey>' . $meetingkey->meetingid . '</meetingkey>';
+        }
+        
+        $payload['xml'] = $xml;
+        $payload['service'] =  str_replace("_", ".", __FUNCTION__);
+
+        $data = $this->transmit($payload);
+        return true;
+
+    }
+
 	//public function meeting_SetTeleconferenceSession();	
 
 	//public function meeting_GetjoinurlMeeting()

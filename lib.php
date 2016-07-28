@@ -176,18 +176,13 @@ function webex_add_instance($data, $mform) {
      * @since 15/06/2016
      * @paradiso
      */ 
-    if($data->conference_type)
-        
-    {
+    if($data->conference_type) {
       $parameters['conference_type'] =  $data->conference_type;
     }
-    if($data->video_type)
-        
-    {
+    if($data->video_type) {
       $parameters["video_type"] =  $data->video_type;
     }
    
-
     $data->parameters = serialize($parameters);
     $data->meetingid = $meeting;
 
@@ -322,7 +317,7 @@ function webex_add_instance($data, $mform) {
     $DB->update_record('webex', $data);
 
     $ssql = "SELECT u.id, u.username,u.email,u.firstname,u.lastname
-    FROM mdl_user u, mdl_role_assignments r
+    FROM {user} u, {role_assignments} r
     WHERE u.id=r.userid AND r.contextid = {$contextid->id}";
     $result = $DB->get_records_sql($ssql);
 
@@ -417,16 +412,22 @@ function webex_get_rooms($course){
         
     
 }
+
 /**
- * Update webex instance.
- * @param object $data
- * @param object $mform
- * @return bool true
+ * Update a webex event.
+ *
+ * @author  Andrew Ramos
+ * @param   object $data contains the form elements
+ * @param   object $mform contains all forms keys and attributes
+ * @return  bool true if it was updated, false otherwise.
  */
 function webex_update_instance($data, $mform) {
-    global $CFG, $DB;
+    
+    global $CFG, $DB, $USER;
 
     require_once($CFG->dirroot . '/mod/webex/locallib.php');
+    require_once($CFG->dirroot . '/mod/webex/webex.php');
+    $config = get_config('webex');
 
     $parameters = array();
     for ($i = 0; $i < 100; $i++) {
@@ -438,8 +439,9 @@ function webex_update_instance($data, $mform) {
         $parameters[$data->$parameter] = $data->$variable;
     }
     
-     /** set correctly parameters field from DB 
-     * @author: miguel p
+    /** 
+     * Set correctly parameters field from DB.
+     * @author Miguel P.
      * @since 15/06/2016
      * @paradiso
      */ 
@@ -468,8 +470,6 @@ function webex_update_instance($data, $mform) {
           $parameters["video_type"] =  $data->video_type;
         }        
     }
-    
-
 
     $data->parameters = serialize($parameters);
 
@@ -489,13 +489,88 @@ function webex_update_instance($data, $mform) {
     $data->timemodified = time();
     $data->id = $data->instance;
 
-    $DB->update_record('webex', $data);
+    // Attempt to update the event on webex.
+    $displayoptions = array();
+    if ($data->display == RESOURCELIB_DISPLAY_POPUP) {
+        $displayoptions['popupwidth'] = $data->popupwidth;
+        $displayoptions['popupheight'] = $data->popupheight;
+    }
+    if (in_array($data->display, array(RESOURCELIB_DISPLAY_AUTO, RESOURCELIB_DISPLAY_EMBED, RESOURCELIB_DISPLAY_FRAME))) {
+        $displayoptions['printheading'] = (int) !empty($data->printheading);
+        $displayoptions['printintro'] = (int) !empty($data->printintro);
+    }
+
+    // if ($data->duration == 1) {
+    //     $data->timeduration = $data->timedurationuntil - $data->timestart;
+    // } else if ($data->duration == 0) {
+    //     $data->timeduration = $data->timedurationminutes * MINSECS;
+    // }
+    
+    $data->duration = $data->timedurationminutes;
+    $data->displayoptions = serialize($displayoptions);
+    $data->externalurl = webex_fix_submitted_webex($data->externalurl);
+    $data->timemodified = time();
+
+    $webexoptions = new stdclass();
+    if(isset($data->meeting_password) && $data->meeting_password!='') {
+        $webexoptions->meeting_password = trim($data->meeting_password);
+    } else {
+        $webexoptions->meeting_password = 'paradiso';   
+    }
+
+    if (isset($data->attendees) && $data->attendees != '' ) {
+        $webexoptions->attendees = str_getcsv(trim($data->attendees),','); 
+    }
+
+    if(isset($data->video_type) && $data->video_type) {
+        $webexoptions->video_type= $data->video_type;
+    }
+
+    if(isset($data->conference_type) && $data->conference_type) {
+       $webexoptions->conference_type = $data->conference_type;
+    }
+
+    $webex = new WebEx($config->webexid, $config->webexpassword, $config->siteid, $config->partnerid, $config->siteurl);
+    $webex->user_SetUser($config->webexid, $USER->firstname,$USER->lastname);
+
+    // If the WebEx service is Meeting Center
+    if ($data->webexservice === 'meetingservice') {
+       
+        $meeting = $webex->meeting_SetMeeting(
+                        $data->id,
+                        $data->name,
+                        date("m/d/Y H:i:s", ($data->timestart)),
+                        $data->intro,
+                        $data->duration / 60,
+                        'NO_REPEAT',
+                        strtoupper(date("l",$data->timestart)),
+                        $webexoptions
+        );
+
+        // If there was an error, then notify the user.
+        if(!$meeting) {
+            print_error(
+                'The event could not be updated.',
+                '',
+                new moodle_url($CFG->wwwroot.'/course/view.php',
+                array('id'=>$data->course))
+            );
+            return false;  
+        } else {
+            // ... Otherwise, update the meeting record.
+            $DB->update_record('webex', $data);
+            return true;
+        }
+
+    } // End if.
 
     return true;
 }
 
 /**
  * Delete webex instance.
+ *
+ * NEED WORK, ONLY ONE TYPE OF EVENT IS BEING DELETED
  * @param int $id
  * @return bool true
  */
@@ -508,7 +583,8 @@ function webex_delete_instance($id) {
 
     $file = $url->recordfile;
     $webex = new WebEx($config->webexid, $config->webexpassword, $config->siteid, $config->partnerid, $config->siteurl );
-    $webex->training_DelTrainingSession($url->meetingid);
+    $webex->meeting_DelMeeting($url->meetingid);
+    // $webex->training_DelTrainingSession($url->meetingid);
     $event = $DB->get_record('event', array('id' => $url->eventid));
     
     if (!$url) {

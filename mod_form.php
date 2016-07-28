@@ -71,14 +71,14 @@ class mod_webex_mod_form extends moodleform_mod {
          * @since 15/06/2016
          * @paradiso
          */ 
-        $webexparam = unserialize($this->current->parameters);      
+        $webexparam = unserialize(@$this->current->parameters);
       
 
         $mform->addElement('header', get_string('servicetype', 'webex'), get_string('servicetype', 'webex'));
 
         $mform->addElement('select', 'webexservice', get_string('webexservice', 'webex'), $services);
         $mform->setType('webexservice', PARAM_TEXT);
-        $webexparamserv = $webexparam[webexservice] ; 
+        $webexparamserv = $webexparam['webexservice'] ; 
         $mform->setDefault('webexservice',  $webexparamserv);
         $mform->addRule('webexservice', get_string('webexservicerequired', 'webex'), 'required', null, 'client');
          $mform->addHelpButton('webexservice','webexservice','webex');
@@ -124,14 +124,14 @@ class mod_webex_mod_form extends moodleform_mod {
 
         $options = array(''=>'Select','1'=>'VoIP','2'=>'WebEx Audio');
         $mform->addElement('select','conference_type',get_string('conference_type','webex'),$options);
-        $webexparamconf = $webexparam[conference_type] ;
+        $webexparamconf = $webexparam['conference_type'] ;
         $mform->setDefault('conference_type', $webexparamconf);
         $mform->addHelpButton('conference_type', 'conference_type','webex');
         $mform->addRule('conference_type',  get_string('conference_type_req','webex'),'required','client');
         
         $options = array(''=>'Select','1'=>'HQVideo','2'=>'HDVideo');
         $mform->addElement('select','video_type',get_string('video_type','webex'),$options);
-        $webexparamvide = $webexparam[video_type] ;
+        $webexparamvide = $webexparam['video_type'] ;
         $mform->setDefault('video_type', $webexparamvide);
         $mform->addHelpButton('video_type', 'video_type','webex');
         $mform->addRule('video_type',  get_string('video_type_req','webex'),'required','client');
