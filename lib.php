@@ -452,7 +452,7 @@ function webex_update_instance($data, $mform) {
            $parammk['params']=  unserialize($itemaux);            
         }
         //assign meeting key and others
-        $parameters["MK"] = $parammk['params'][MK];        
+        $parameters["MK"] = $parammk['params']['MK'];        
         if($data->webexservice)        
         {
           $parameters['webexservice'] =  $data->webexservice;
@@ -500,13 +500,13 @@ function webex_update_instance($data, $mform) {
         $displayoptions['printintro'] = (int) !empty($data->printintro);
     }
 
-    // if ($data->duration == 1) {
-    //     $data->timeduration = $data->timedurationuntil - $data->timestart;
-    // } else if ($data->duration == 0) {
-    //     $data->timeduration = $data->timedurationminutes * MINSECS;
+    if ($data->timedurationminutes) {
+        $data->duration = $data->timedurationminutes;
+    } 
+    // else {
+    //     $data->duration = $data->timedurationuntil - $data->timestart;
     // }
     
-    $data->duration = $data->timedurationminutes;
     $data->displayoptions = serialize($displayoptions);
     $data->externalurl = webex_fix_submitted_webex($data->externalurl);
     $data->timemodified = time();
@@ -535,13 +535,13 @@ function webex_update_instance($data, $mform) {
 
     // If the WebEx service is Meeting Center
     if ($data->webexservice === 'meetingservice') {
-       
+
         $meeting = $webex->meeting_SetMeeting(
                         $data->id,
                         $data->name,
                         date("m/d/Y H:i:s", ($data->timestart)),
                         $data->intro,
-                        $data->duration / 60,
+                        $data->duration,
                         'NO_REPEAT',
                         strtoupper(date("l",$data->timestart)),
                         $webexoptions
@@ -669,11 +669,9 @@ function webex_get_participants($urlid) {
 }
 
 /**
-
  *
-
  * @param int $course course
- * * @param int $tstart Start time of time range for events
+ * @param int $tstart Start time of time range for events
  * @param int $tend End time of time range for events
  * @param boolean $withduration whether only events starting within time range selected
  *                              or events in progress/already started selected as well

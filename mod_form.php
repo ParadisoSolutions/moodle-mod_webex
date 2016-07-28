@@ -308,11 +308,11 @@ class mod_webex_mod_form extends moodleform_mod {
        
        
         } 
-        if($data['password']!=''){
-        $errmsg = '';
-          if (!check_password_policy($data['password'], $errmsg)) {
-            $errors['password'] = $errmsg;
-        }
+        if (@$data['password'] != '') {
+            $errmsg = '';
+            if (!check_password_policy($data['password'], $errmsg)) {
+                $errors['password'] = $errmsg;
+            }
         }
         if($data['attendees']!='')
         {
